@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Pizza Capucino</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Forum&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin-assets/admin.css">
+</head>
+<body data-page="dashboard">
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="brand">
+        <img src="/assets/images/logo1.png" alt="Pizza Capucino">
+        <div>
+          <strong>Pizza Capucino</strong>
+          <span>Reservation Admin</span>
+        </div>
+      </div>
+
+      <div class="side-group">
+        <span class="side-label">Overview</span>
+        <nav class="side-nav">
+          <a class="side-link active" href="#dashboard-section">Dashboard</a>
+          <a class="side-link" href="#reservations-section">Reservations</a>
+          <a class="side-link" href="#payments-section">Payments</a>
+          <a class="side-link" href="#orders-section">Orders</a>
+          <a class="side-link" href="#calendar-section">Calendar</a>
+          <a class="side-link" href="#menu-section">Menu</a>
+          <a class="side-link" href="#analytics-section">Analytics</a>
+          <a class="side-link" href="#notifications-section">Notifications</a>
+          <a class="side-link" href="#settings-section">Settings</a>
+          <a class="side-link" href="#branches-section">Branches</a>
+        </nav>
+      </div>
+
+      <div class="side-group">
+        <span class="side-label">What is live now</span>
+        <div class="side-note">
+          <p>The full MVP control surface now lives here: reservation operations, manual payment verification, preorder orders, menu changes, analytics, calendar, notifications, and editable public settings.</p>
+        </div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="topbar">
+        <div>
+          <div id="welcome-copy" class="welcome-line">Loading admin session...</div>
+          <h1>Restaurant Control Center</h1>
+          <p>Run bookings, verify manual payments, update dishes, review trends, and manage the public booking settings from one place.</p>
+        </div>
+
+        <div class="button-row">
+          <button id="refresh-dashboard" class="button primary" type="button">Refresh All</button>
+          <button id="logout-button" class="button" type="button">Logout</button>
+        </div>
+      </header>
+
+      <section id="dashboard-section" class="section-anchor panel hero-panel">
+        <div class="hero-grid">
+          <div class="hero-meta">
+            <div class="hero-note">
+              <strong>Live operations snapshot</strong>
+              <p id="dashboard-note">The dashboard shows bookings, payments, orders, branch load, and unread notifications as soon as data is available.</p>
+            </div>
+            <div class="hero-actions">
+              <a class="button primary" href="#payments-section">Review Pending Payments</a>
+              <a class="button" href="#menu-section">Manage Menu</a>
+              <a class="button" href="#settings-section">Open Settings</a>
+            </div>
+          </div>
+
+          <div class="hero-note">
+            <strong>Manual payment flow</strong>
+            <p>Pre-order customers still pay through your GPay or UPI QR and send the screenshot to WhatsApp. Admin can now mark those payments as paid, failed, pending, or refunded from the payments section.</p>
+          </div>
+        </div>
+
+        <div id="dashboard-cards" class="card-grid"></div>
+      </section>
+
+      <section class="section-grid">
+        <article class="panel panel-block">
+          <h2>Branch-wise Reservations</h2>
+          <div id="branch-stats" class="stack"></div>
+        </article>
+
+        <article class="panel panel-block">
+          <h2>Recent Bookings</h2>
+          <div id="recent-bookings" class="stack"></div>
+        </article>
+
+        <article class="panel panel-block">
+          <h2>Unread Notifications</h2>
+          <div id="notification-preview" class="stack"></div>
+        </article>
+      </section>
+
+      <section id="reservations-section" class="section-anchor panel panel-block">
+        <h2>Reservation Management</h2>
+        <div class="filters">
+          <div class="field">
+            <label for="search">Search</label>
+            <input id="search" type="text" placeholder="Booking ID, name, phone, email">
+          </div>
+          <div class="field">
+            <label for="statusFilter">Status</label>
+            <select id="statusFilter">
+              <option value="">All statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="CANCELLED">Cancelled</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="branchFilter">Branch</label>
+            <select id="branchFilter"><option value="">All branches</option></select>
+          </div>
+          <div class="field">
+            <label for="paymentFilter">Payment</label>
+            <select id="paymentFilter">
+              <option value="">All payments</option>
+              <option value="NOT_REQUIRED">Not Required</option>
+              <option value="PENDING">Pending</option>
+              <option value="AWAITING_CONFIRMATION">Awaiting Confirmation</option>
+              <option value="PAID">Paid</option>
+              <option value="FAILED">Failed</option>
+              <option value="REFUNDED">Refunded</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sortBy">Sort By</label>
+            <select id="sortBy">
+              <option value="createdAt">Created Time</option>
+              <option value="serviceDate">Reservation Date</option>
+              <option value="guestCount">Guests</option>
+              <option value="customerName">Customer Name</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sortOrder">Direction</label>
+            <select id="sortOrder">
+              <option value="desc">Newest First</option>
+              <option value="asc">Oldest First</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="reservation-banner" class="banner hide"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Booking ID</th>
+                <th>Customer</th>
+                <th>Branch</th>
+                <th>Date</th>
+                <th>Guests</th>
+                <th>Type</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="reservation-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="toolbar-footer">
+          <p id="reservation-pagination-copy">Loading reservations...</p>
+          <div class="pagination">
+            <button id="prev-page" class="button" type="button">Previous</button>
+            <button id="next-page" class="button" type="button">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="payments-section" class="section-anchor panel panel-block">
+        <h2>Payment Verification</h2>
+        <div class="filters">
+          <div class="field">
+            <label for="paymentSearch">Search</label>
+            <input id="paymentSearch" type="text" placeholder="Booking ID, customer, reference">
+          </div>
+          <div class="field">
+            <label for="paymentStatusFilter">Status</label>
+            <select id="paymentStatusFilter">
+              <option value="">All statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="AWAITING_CONFIRMATION">Awaiting Confirmation</option>
+              <option value="PAID">Paid</option>
+              <option value="FAILED">Failed</option>
+              <option value="REFUNDED">Refunded</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="paymentBranchFilter">Branch</label>
+            <select id="paymentBranchFilter"><option value="">All branches</option></select>
+          </div>
+        </div>
+        <div id="payment-banner" class="banner hide"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Booking</th>
+                <th>Customer</th>
+                <th>Branch</th>
+                <th>Amount</th>
+                <th>Reference</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="payment-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="orders-section" class="section-anchor panel panel-block">
+        <h2>Pre-order Orders</h2>
+        <div class="filters">
+          <div class="field">
+            <label for="orderBranchFilter">Branch</label>
+            <select id="orderBranchFilter"><option value="">All branches</option></select>
+          </div>
+          <div class="field">
+            <label for="orderStatusFilter">Status</label>
+            <select id="orderStatusFilter">
+              <option value="">All statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Booking</th>
+                <th>Customer</th>
+                <th>Branch</th>
+                <th>Items</th>
+                <th>Subtotal</th>
+                <th>Advance</th>
+                <th>Balance</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="order-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="calendar-section" class="section-anchor panel panel-block">
+        <h2>Calendar View</h2>
+        <div class="filters">
+          <div class="field">
+            <label for="calendarPeriod">Period</label>
+            <select id="calendarPeriod">
+              <option value="day">Day</option>
+              <option value="week">Week</option>
+              <option value="month" selected>Month</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="calendarDate">Reference Date</label>
+            <input id="calendarDate" type="date">
+          </div>
+          <div class="field">
+            <label for="calendarBranch">Branch</label>
+            <select id="calendarBranch"><option value="">All branches</option></select>
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button id="calendar-reload" class="button primary" type="button">Load Calendar</button>
+          </div>
+        </div>
+        <div id="calendar-range" class="banner">Loading calendar...</div>
+        <div id="calendar-groups" class="stack"></div>
+      </section>
+
+      <section id="menu-section" class="section-anchor panel panel-block">
+        <h2>Menu Management</h2>
+        <div class="two-column-grid">
+          <div>
+            <div class="filters" style="grid-template-columns: 1fr 1fr;">
+              <div class="field">
+                <label for="menuSearch">Search</label>
+                <input id="menuSearch" type="text" placeholder="Dish or category">
+              </div>
+              <div class="field">
+                <label for="menuCategoryFilter">Category</label>
+                <select id="menuCategoryFilter"><option value="">All categories</option></select>
+              </div>
+            </div>
+            <div id="menu-banner" class="banner hide"></div>
+            <div id="menu-items" class="menu-card-list"></div>
+          </div>
+          <div class="panel panel-block" style="padding:22px;">
+            <h3 id="menu-form-title">Add Dish</h3>
+            <form id="menu-form" class="stack" enctype="multipart/form-data">
+              <input id="menuId" type="hidden">
+              <div class="field">
+                <label for="menuName">Dish Name</label>
+                <input id="menuName" type="text" required>
+              </div>
+              <div class="field">
+                <label for="menuCode">Code</label>
+                <input id="menuCode" type="text">
+              </div>
+              <div class="field">
+                <label for="menuCategory">Category</label>
+                <input id="menuCategory" type="text" required>
+              </div>
+              <div class="field">
+                <label for="menuPrice">Price</label>
+                <input id="menuPrice" type="number" min="0" step="0.01" required>
+              </div>
+              <div class="field">
+                <label for="menuDescription">Description</label>
+                <textarea id="menuDescription" rows="4"></textarea>
+              </div>
+              <div class="field">
+                <label for="menuImageUrl">Image URL (optional)</label>
+                <input id="menuImageUrl" type="text">
+              </div>
+              <div class="field">
+                <label for="menuImage">Upload Image (optional)</label>
+                <input id="menuImage" type="file" accept="image/*">
+              </div>
+              <div class="field">
+                <label for="menuDietaryType">Dietary Type</label>
+                <select id="menuDietaryType">
+                  <option value="VEG">Veg</option>
+                  <option value="NON_VEG">Non Veg</option>
+                  <option value="EGG">Egg</option>
+                  <option value="BEVERAGE">Beverage</option>
+                  <option value="DESSERT">Dessert</option>
+                </select>
+              </div>
+              <label class="checkbox">
+                <input id="menuFeatured" type="checkbox">
+                <span>Featured dish</span>
+              </label>
+              <label class="checkbox">
+                <input id="menuAvailable" type="checkbox" checked>
+                <span>Available for preorder</span>
+              </label>
+              <div class="button-row">
+                <button class="button primary" type="submit">Save Dish</button>
+                <button id="menu-reset" class="button" type="button">Reset</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section id="analytics-section" class="section-anchor panel panel-block">
+        <div class="topbar" style="margin-bottom: 18px;">
+          <div>
+            <h2>Analytics</h2>
+            <p>Reservations, revenue, branch load, popular dishes, and peak booking hours.</p>
+          </div>
+          <div class="button-row">
+            <select id="analyticsDays" class="button">
+              <option value="14">Last 14 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="60">Last 60 days</option>
+            </select>
+            <button id="analytics-reload" class="button primary" type="button">Reload Analytics</button>
+          </div>
+        </div>
+        <div class="chart-grid">
+          <article class="chart-panel">
+            <h3>Reservations Per Day</h3>
+            <div id="reservations-chart" class="bar-list"></div>
+          </article>
+          <article class="chart-panel">
+            <h3>Revenue Per Day</h3>
+            <div id="revenue-chart" class="bar-list"></div>
+          </article>
+          <article class="chart-panel">
+            <h3>Reservations Per Branch</h3>
+            <div id="branch-chart" class="bar-list"></div>
+          </article>
+          <article class="chart-panel">
+            <h3>Popular Dishes</h3>
+            <div id="popular-dishes" class="bar-list"></div>
+          </article>
+          <article class="chart-panel">
+            <h3>Peak Booking Hours</h3>
+            <div id="peak-hours" class="bar-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="notifications-section" class="section-anchor panel panel-block">
+        <div class="topbar" style="margin-bottom: 18px;">
+          <div>
+            <h2>Notifications</h2>
+            <p id="notifications-unread">Loading notifications...</p>
+          </div>
+          <div class="button-row">
+            <button id="notifications-refresh" class="button" type="button">Refresh</button>
+            <button id="mark-all-read" class="button primary" type="button">Mark All Read</button>
+          </div>
+        </div>
+        <div id="notifications-list" class="stack"></div>
+      </section>
+
+      <section id="settings-section" class="section-anchor panel panel-block">
+        <h2>Settings</h2>
+        <p>Update public booking details, QR instructions, booking policy, and SMTP configuration.</p>
+        <div id="settings-banner" class="banner hide"></div>
+        <form id="settings-form" class="settings-grid">
+          <article class="panel panel-block">
+            <h3>Restaurant</h3>
+            <div class="stack">
+              <label class="field"><span>Name</span><input id="settingsRestaurantName" type="text" required></label>
+              <label class="field"><span>Email</span><input id="settingsRestaurantEmail" type="email" required></label>
+              <label class="field"><span>Phone</span><input id="settingsRestaurantPhone" type="text" required></label>
+              <label class="field"><span>Tagline</span><input id="settingsRestaurantTagline" type="text" required></label>
+              <label class="field"><span>Logo URL</span><input id="settingsRestaurantLogo" type="text" required></label>
+              <label class="field"><span>Address</span><input id="settingsRestaurantAddress" type="text" required></label>
+              <label class="field"><span>Google Maps</span><input id="settingsRestaurantMaps" type="text" required></label>
+              <label class="field"><span>Expected Branch Count</span><input id="settingsBranchesExpected" type="number" min="1" required></label>
+            </div>
+          </article>
+
+          <article class="panel panel-block">
+            <h3>Booking Policy</h3>
+            <div class="stack">
+              <label class="field"><span>Minimum Guests</span><input id="settingsMinGuests" type="number" min="1" required></label>
+              <label class="field"><span>Maximum Guests</span><input id="settingsMaxGuests" type="number" min="1" required></label>
+              <label class="field"><span>Advance Payment %</span><input id="settingsAdvancePercent" type="number" min="0" max="100" required></label>
+              <label class="field"><span>Reservation Duration (minutes)</span><input id="settingsDuration" type="number" min="30" required></label>
+              <label class="field"><span>Cancellation Hours</span><input id="settingsCancellationHours" type="number" min="0" required></label>
+              <label class="field"><span>Operating Start</span><input id="settingsOperatingStart" type="time" required></label>
+              <label class="field"><span>Operating End</span><input id="settingsOperatingEnd" type="time" required></label>
+            </div>
+          </article>
+
+          <article class="panel panel-block">
+            <h3>Manual Payment</h3>
+            <div class="stack">
+              <label class="field"><span>Provider</span><input id="settingsPaymentProvider" type="text" required></label>
+              <label class="field"><span>QR Image URL</span><input id="settingsQrUrl" type="text" required></label>
+              <label class="field"><span>WhatsApp Number</span><input id="settingsWhatsapp" type="text" required></label>
+              <label class="field"><span>Instructions</span><textarea id="settingsPaymentInstructions" rows="4" required></textarea></label>
+              <label class="checkbox"><input id="settingsScreenshotStored" type="checkbox"><span>Screenshot stored on server</span></label>
+            </div>
+          </article>
+
+          <article class="panel panel-block">
+            <h3>SMTP</h3>
+            <div class="stack">
+              <label class="field"><span>Host</span><input id="settingsSmtpHost" type="text"></label>
+              <label class="field"><span>Port</span><input id="settingsSmtpPort" type="number" min="1"></label>
+              <label class="field"><span>User</span><input id="settingsSmtpUser" type="text"></label>
+              <label class="field"><span>Password</span><input id="settingsSmtpPass" type="password"></label>
+              <label class="field"><span>From Name</span><input id="settingsSmtpFromName" type="text"></label>
+              <label class="field"><span>From Email</span><input id="settingsSmtpFromEmail" type="email"></label>
+              <label class="checkbox"><input id="settingsSmtpSecure" type="checkbox"><span>Use secure transport</span></label>
+            </div>
+          </article>
+
+          <article class="panel panel-block">
+            <h3>Notification Email Rules</h3>
+            <div class="stack">
+              <label class="checkbox"><input id="settingsNotifyBooking" type="checkbox"><span>Send booking confirmation emails</span></label>
+              <label class="checkbox"><input id="settingsNotifyStatus" type="checkbox"><span>Send status update emails</span></label>
+              <label class="checkbox"><input id="settingsNotifyPayment" type="checkbox"><span>Send payment update emails</span></label>
+            </div>
+          </article>
+
+          <div class="button-row">
+            <button class="button primary" type="submit">Save Settings</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="branches-section" class="section-anchor panel panel-block">
+        <h2>Branch and Seat Management</h2>
+        <p>Update total tables, total seats, operating hours, and activation status. These values feed the public availability checks.</p>
+        <div id="branch-banner" class="banner hide"></div>
+        <div id="branch-grid" class="branch-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="reservation-modal" class="overlay">
+    <div class="modal-card">
+      <div class="modal-topbar">
+        <div>
+          <h3 id="modal-title">Reservation Details</h3>
+          <p id="modal-subtitle" class="welcome-line">Loading...</p>
+        </div>
+        <button id="close-modal" class="button" type="button">Close</button>
+      </div>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="/admin-assets/admin.js"></script>
+</body>
+</html>
