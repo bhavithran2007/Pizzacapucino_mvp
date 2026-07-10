@@ -493,6 +493,72 @@
         <h2>Branch and Seat Management</h2>
         <p>Update total tables, total seats, operating hours, and activation status. These values feed the public availability checks.</p>
         <div id="branch-banner" class="banner hide"></div>
+
+        <details class="add-branch-details">
+          <summary class="button primary" style="display:inline-block;cursor:pointer;">+ Add Branch</summary>
+          <form id="add-branch-form" class="panel-block" style="margin-top:16px;">
+            <div class="compact-grid">
+              <label class="field">
+                <span>Branch Name</span>
+                <input name="name" type="text" placeholder="e.g. Cantonment" required>
+              </label>
+              <label class="field">
+                <span>Branch Code (optional)</span>
+                <input name="code" type="text" placeholder="e.g. CANT01" maxlength="20">
+              </label>
+            </div>
+            <label class="field">
+              <span>Address Line 1</span>
+              <input name="addressLine1" type="text" required>
+            </label>
+            <label class="field">
+              <span>Address Line 2 (optional)</span>
+              <input name="addressLine2" type="text">
+            </label>
+            <div class="compact-grid">
+              <label class="field">
+                <span>City</span>
+                <input name="city" type="text">
+              </label>
+              <label class="field">
+                <span>State</span>
+                <input name="state" type="text">
+              </label>
+            </div>
+            <div class="compact-grid">
+              <label class="field">
+                <span>Tables</span>
+                <input name="totalTables" type="number" min="0" max="500" value="10" required>
+              </label>
+              <label class="field">
+                <span>Seats</span>
+                <input name="totalSeats" type="number" min="0" max="2000" value="40" required>
+              </label>
+            </div>
+            <div class="compact-grid">
+              <label class="field">
+                <span>Opens At</span>
+                <input name="opensAt" type="time" value="10:00" required>
+              </label>
+              <label class="field">
+                <span>Closes At</span>
+                <input name="closesAt" type="time" value="23:00" required>
+              </label>
+            </div>
+            <label class="field">
+              <span>Phone</span>
+              <input name="phone" type="text">
+            </label>
+            <label class="checkbox">
+              <input name="isActive" type="checkbox" checked>
+              <span>Branch is active for new reservations</span>
+            </label>
+            <div class="button-row">
+              <button class="button primary" type="submit">Create Branch</button>
+            </div>
+          </form>
+        </details>
+
         <div id="branch-grid" class="branch-grid"></div>
       </section>
     </main>

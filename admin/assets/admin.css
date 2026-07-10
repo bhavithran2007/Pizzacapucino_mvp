@@ -191,6 +191,29 @@ button {
   background: linear-gradient(135deg, rgba(228, 197, 144, 0.14), rgba(228, 197, 144, 0.05));
 }
 
+.button.danger {
+  border-color: rgba(224, 92, 92, 0.4);
+  background: linear-gradient(135deg, rgba(224, 92, 92, 0.16), rgba(224, 92, 92, 0.05));
+  color: #e05c5c;
+}
+
+.button.danger:hover {
+  border-color: rgba(224, 92, 92, 0.7);
+}
+
+.add-branch-details {
+  margin-bottom: 18px;
+}
+
+.add-branch-details summary {
+  list-style: none;
+  width: fit-content;
+}
+
+.add-branch-details summary::-webkit-details-marker {
+  display: none;
+}
+
 .button:hover,
 .action-chip:hover {
   border-color: var(--line-strong);
@@ -472,6 +495,10 @@ tbody tr:hover {
 
 .section-anchor {
   scroll-margin-top: 24px;
+}
+
+.section-anchor.section-hidden {
+  display: none;
 }
 
 .overlay {

@@ -372,6 +372,7 @@
               </label>
               <div class="button-row">
                 <button class="button primary" type="submit">Save Branch</button>
+                <button class="button danger" type="button" data-delete-branch="${branch.id}">Delete Branch</button>
               </div>
             </form>
             <span>${branch.reservationCount} reservations recorded</span>
@@ -379,6 +380,27 @@
         `
       )
       .join('');
+
+    branchGrid.querySelectorAll('[data-delete-branch]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const branchId = button.dataset.deleteBranch;
+        const branch = state.branches.find((item) => item.id === branchId);
+        const confirmed = window.confirm(
+          `Delete "${branch ? branch.name : 'this branch'}"? This can't be undone.`
+        );
+        if (!confirmed) {
+          return;
+        }
+
+        try {
+          await request(`/api/admin/branches/${branchId}`, { method: 'DELETE' });
+          setBanner('branch-banner', 'Branch deleted successfully.', 'success');
+          await Promise.all([loadBranches(), loadDashboard()]);
+        } catch (error) {
+          setBanner('branch-banner', error.message, 'error');
+        }
+      });
+    });
 
     branchGrid.querySelectorAll('form[data-branch-id]').forEach((form) => {
       form.addEventListener('submit', async (event) => {
@@ -404,6 +426,78 @@
           setBanner('branch-banner', error.message, 'error');
         }
       });
+    });
+  }
+
+  function initSectionTabs() {
+    const sections = Array.from(document.querySelectorAll('.section-anchor[id]'));
+    const sectionIds = new Set(sections.map((section) => section.id));
+    const links = Array.from(document.querySelectorAll('a[href^="#"]')).filter((link) =>
+      sectionIds.has(link.getAttribute('href').slice(1))
+    );
+
+    if (!links.length || !sections.length) {
+      return;
+    }
+
+    function showSection(targetId) {
+      sections.forEach((section) => {
+        section.classList.toggle('section-hidden', section.id !== targetId);
+      });
+      document.querySelectorAll('.side-link').forEach((link) => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${targetId}`);
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    links.forEach((link) => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        const targetId = link.getAttribute('href').slice(1);
+        showSection(targetId);
+        history.replaceState(null, '', `#${targetId}`);
+      });
+    });
+
+    const initialId = window.location.hash.replace('#', '');
+    const hasInitialSection = sections.some((section) => section.id === initialId);
+    showSection(hasInitialSection ? initialId : sections[0].id);
+  }
+
+  function initAddBranchForm() {
+    const form = byId('add-branch-form');
+    if (!form) {
+      return;
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
+
+      try {
+        await request('/api/admin/branches', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: String(formData.get('name') || '').trim(),
+            code: String(formData.get('code') || '').trim() || undefined,
+            addressLine1: String(formData.get('addressLine1') || '').trim(),
+            addressLine2: String(formData.get('addressLine2') || '').trim(),
+            city: String(formData.get('city') || '').trim(),
+            state: String(formData.get('state') || '').trim(),
+            phone: String(formData.get('phone') || '').trim(),
+            totalTables: Number(formData.get('totalTables') || 0),
+            totalSeats: Number(formData.get('totalSeats') || 0),
+            opensAt: String(formData.get('opensAt') || ''),
+            closesAt: String(formData.get('closesAt') || ''),
+            isActive: form.querySelector('[name="isActive"]').checked
+          })
+        });
+        setBanner('branch-banner', 'Branch created successfully.', 'success');
+        form.reset();
+        await Promise.all([loadBranches(), loadDashboard()]);
+      } catch (error) {
+        setBanner('branch-banner', error.message, 'error');
+      }
     });
   }
 
@@ -1121,6 +1215,8 @@
 
   async function setupDashboardPage() {
     wireDashboardEvents();
+    initAddBranchForm();
+    initSectionTabs();
     try {
       const now = new Date();
       byId('calendarDate').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;

@@ -815,6 +815,86 @@ async function updateBranch(branchId, payload) {
   };
 }
 
+async function createBranch(payload) {
+  const slugBase = slugify(payload.name);
+  if (!slugBase) {
+    throw new AppError(400, 'Branch name is required to create a slug.');
+  }
+
+  let slug = slugBase;
+  let suffix = 1;
+  // eslint-disable-next-line no-await-in-loop
+  while (await prisma.branch.findUnique({ where: { slug } })) {
+    suffix += 1;
+    slug = `${slugBase}-${suffix}`;
+  }
+
+  const code = payload.code || slugBase.toUpperCase().replace(/-/g, '_').slice(0, 20);
+
+  const branch = await prisma.branch.create({
+    data: {
+      code,
+      name: payload.name,
+      slug,
+      phone: payload.phone || null,
+      addressLine1: payload.addressLine1,
+      addressLine2: payload.addressLine2 || null,
+      city: payload.city || null,
+      state: payload.state || null,
+      totalTables: payload.totalTables,
+      totalSeats: payload.totalSeats,
+      opensAt: payload.opensAt,
+      closesAt: payload.closesAt,
+      isActive: payload.isActive ?? true
+    }
+  });
+
+  return {
+    id: branch.id,
+    code: branch.code,
+    name: branch.name,
+    addressLine1: branch.addressLine1,
+    city: branch.city,
+    totalTables: branch.totalTables,
+    totalSeats: branch.totalSeats,
+    opensAt: branch.opensAt,
+    closesAt: branch.closesAt,
+    isActive: branch.isActive,
+    phone: branch.phone,
+    reservationCount: 0
+  };
+}
+
+async function deleteBranch(branchId) {
+  const branch = await prisma.branch.findUnique({
+    where: {
+      id: branchId
+    }
+  });
+
+  if (!branch) {
+    throw new AppError(404, 'Branch not found.');
+  }
+
+  const reservationCount = await prisma.reservation.count({
+    where: {
+      branchId
+    }
+  });
+
+  if (reservationCount > 0) {
+    throw new AppError(
+      400,
+      `This branch has ${reservationCount} reservation(s) on record and can't be deleted. Mark it inactive instead.`
+    );
+  }
+
+  await prisma.analyticsEvent.deleteMany({ where: { branchId } });
+  await prisma.branch.delete({ where: { id: branchId } });
+
+  return { success: true };
+}
+
 function buildPaymentWhereClause(filters) {
   const where = {};
 
@@ -1335,6 +1415,8 @@ module.exports = {
   getReservationById,
   getSettings,
   listBranches,
+  createBranch,
+  deleteBranch,
   listMenuItems,
   listNotifications,
   listOrders,

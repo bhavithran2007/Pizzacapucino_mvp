@@ -2141,3 +2141,152 @@ textarea.input-field {
   }
 
 }
+
+/**
+ * MENU ACCORDION (category-by-category, closed by default)
+ */
+
+.menu-accordion {
+  display: grid;
+  gap: 16px;
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+.menu-accordion-item {
+  border: 1px solid var(--white-alpha-10);
+  border-radius: 12px;
+  background: var(--eerie-black-2);
+  overflow: hidden;
+}
+
+.menu-accordion-item[open] {
+  border-color: var(--gold-crayola);
+}
+
+.menu-accordion-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--fontFamily-forum);
+  font-size: 2rem;
+  color: var(--white);
+  transition: var(--transition-1);
+}
+
+.menu-accordion-summary::-webkit-details-marker { display: none; }
+.menu-accordion-summary::marker { content: ""; }
+
+.menu-accordion-summary:hover { color: var(--gold-crayola); }
+
+.menu-accordion-summary .accordion-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--gold-crayola);
+  border-radius: 50%;
+  font-size: 1.6rem;
+  color: var(--gold-crayola);
+  transition: var(--transition-1);
+}
+
+.menu-accordion-item[open] .accordion-icon { transform: rotate(45deg); }
+
+.menu-accordion-summary .accordion-count {
+  margin-inline-end: auto;
+  margin-inline-start: 14px;
+  font-family: var(--fontFamily-dm_sans);
+  font-size: 1.3rem;
+  color: var(--quick-silver);
+  font-weight: var(--weight-regular);
+}
+
+.menu-accordion-body {
+  padding: 0 22px 20px;
+  border-top: 1px solid var(--white-alpha-10);
+}
+
+.menu-item-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--white-alpha-10);
+}
+
+.menu-item-row:last-of-type { border-bottom: none; }
+
+.menu-item-row .item-name {
+  font-family: var(--fontFamily-dm_sans);
+  font-size: 1.6rem;
+  color: var(--white);
+}
+
+.menu-item-row .item-price {
+  flex-shrink: 0;
+  font-family: var(--fontFamily-dm_sans);
+  font-weight: var(--weight-bold);
+  font-size: 1.5rem;
+  color: var(--gold-crayola);
+  white-space: nowrap;
+}
+
+.menu-item-row .item-price small {
+  font-weight: var(--weight-regular);
+  color: var(--quick-silver);
+  font-size: 1.1rem;
+}
+
+.menu-addon-note {
+  margin-top: 8px;
+  padding-top: 10px;
+  font-family: var(--fontFamily-dm_sans);
+  font-size: 1.3rem;
+  color: var(--quick-silver);
+  font-style: italic;
+}
+
+.menu-price-columns {
+  display: flex;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.menu-price-columns .item-price { min-width: 52px; text-align: right; }
+
+.menu-combo-banner {
+  max-width: 900px;
+  margin: 0 auto 40px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.menu-combo-card {
+  border: 1px solid rgba(228, 197, 144, 0.35);
+  background: linear-gradient(135deg, rgba(228, 197, 144, 0.12), transparent);
+  border-radius: 10px;
+  padding: 16px 18px;
+  font-family: var(--fontFamily-dm_sans);
+}
+
+.menu-combo-card .combo-title {
+  font-weight: var(--weight-bold);
+  color: var(--gold-crayola);
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.menu-combo-card .combo-text {
+  color: var(--white);
+  font-size: 1.3rem;
+  line-height: var(--lineHeight-4);
+}

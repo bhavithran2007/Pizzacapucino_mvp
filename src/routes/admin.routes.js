@@ -53,6 +53,21 @@ const branchUpdateSchema = z.object({
   phone: z.string().trim().max(25).nullable().optional()
 });
 
+const branchCreateSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  code: z.string().trim().max(20).optional(),
+  addressLine1: z.string().trim().min(3).max(255),
+  addressLine2: z.string().trim().max(255).optional().or(z.literal('')),
+  city: z.string().trim().max(120).optional().or(z.literal('')),
+  state: z.string().trim().max(120).optional().or(z.literal('')),
+  phone: z.string().trim().max(25).optional().or(z.literal('')),
+  totalTables: z.coerce.number().int().min(0).max(500),
+  totalSeats: z.coerce.number().int().min(0).max(2000),
+  opensAt: timeSchema,
+  closesAt: timeSchema,
+  isActive: stringBoolean.optional().default(true)
+});
+
 const paymentQuerySchema = z.object({
   page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(50).optional().default(10),
@@ -250,6 +265,18 @@ router.get(
   })
 );
 
+router.post(
+  '/branches',
+  asyncHandler(async (req, res) => {
+    const body = branchCreateSchema.parse(req.body);
+    const branch = await adminService.createBranch(body);
+    res.status(201).json({
+      message: 'Branch created successfully.',
+      branch
+    });
+  })
+);
+
 router.patch(
   '/branches/:id',
   asyncHandler(async (req, res) => {
@@ -259,6 +286,17 @@ router.patch(
     res.json({
       message: 'Branch updated successfully.',
       branch
+    });
+  })
+);
+
+router.delete(
+  '/branches/:id',
+  asyncHandler(async (req, res) => {
+    const params = z.object({ id: z.string().trim().min(1) }).parse(req.params);
+    await adminService.deleteBranch(params.id);
+    res.json({
+      message: 'Branch deleted successfully.'
     });
   })
 );
