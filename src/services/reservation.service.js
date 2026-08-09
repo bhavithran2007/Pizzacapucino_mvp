@@ -432,17 +432,18 @@ async function createReservation(payload) {
   const manualPaymentConfig = await getManualPaymentConfig();
   const settings = await getSettingsBundle();
 
-  const reservation = await prisma.$transaction(async (tx) => {
-    const availability = await buildAvailabilityContext(tx, payload);
+  const reservation = await prisma.$transaction(
+    async (tx) => {
+      const availability = await buildAvailabilityContext(tx, payload);
 
-    if (!availability.available) {
-      throw new AppError(409, 'No tables are available for the selected date and time.', {
-        suggestions: availability.suggestions,
-        remainingSeats: availability.remainingSeats
-      });
-    }
+      if (!availability.available) {
+        throw new AppError(409, 'No tables are available for the selected date and time.', {
+          suggestions: availability.suggestions,
+          remainingSeats: availability.remainingSeats
+        });
+      }
 
-    const shouldPreorder = payload.reservationType === ReservationType.TABLE_WITH_PREORDER;
+      const shouldPreorder = payload.reservationType === ReservationType.TABLE_WITH_PREORDER;
     const rawItems = shouldPreorder ? payload.items || [] : [];
 
     if (shouldPreorder && rawItems.length === 0) {
@@ -582,7 +583,12 @@ async function createReservation(payload) {
     });
 
     return reservation;
-  });
+    },
+    {
+      timeout: 15000,
+      maxWait: 10000
+    }
+  );
 
   await createAdminNotifications({
     title: 'New reservation received',
@@ -653,3 +659,4 @@ module.exports = {
   listAvailableMenuItems,
   lookupReservation
 };
+
