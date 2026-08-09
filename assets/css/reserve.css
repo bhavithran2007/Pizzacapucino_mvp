@@ -307,20 +307,6 @@ body.reserve-page {
   margin-top: 18px;
 }
 
-.menu-category-group {
-  margin-bottom: 22px;
-}
-
-.menu-category-heading {
-  font-size: 1.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--gold-crayola);
-  margin-bottom: 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--white-alpha-10);
-}
-
 .menu-item-card {
   display: grid;
   grid-template-columns: 1fr auto;
