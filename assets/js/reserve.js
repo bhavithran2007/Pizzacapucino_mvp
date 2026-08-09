@@ -90,27 +90,33 @@ function renderMenuItems() {
   menuContainer.innerHTML = Object.entries(byCategory)
     .map(
       ([category, items]) => `
-        <div class="menu-category-group">
-          <h4 class="menu-category-heading">${category}</h4>
-          ${items
-            .map(
-              (item) => `
-                <article class="menu-item-card">
-                  <div class="menu-item-copy">
-                    <h3>${item.name}</h3>
-                    <div class="menu-meta">
-                      <span class="menu-chip">${formatCurrency(item.price)}</span>
+        <details class="menu-accordion-item">
+          <summary class="menu-accordion-summary">
+            <span>${category}</span>
+            <span class="accordion-count">${items.length} items</span>
+            <span class="accordion-icon" aria-hidden="true">+</span>
+          </summary>
+          <div class="menu-accordion-body">
+            ${items
+              .map(
+                (item) => `
+                  <article class="menu-item-card">
+                    <div class="menu-item-copy">
+                      <h3>${item.name}</h3>
+                      <div class="menu-meta">
+                        <span class="menu-chip">${formatCurrency(item.price)}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div class="qty-box">
-                    <label class="field-label" for="qty-${item.id}">Qty</label>
-                    <input class="input-field item-qty-input" id="qty-${item.id}" type="number" min="0" max="20" value="0" data-menu-id="${item.id}">
-                  </div>
-                </article>
-              `
-            )
-            .join('')}
-        </div>
+                    <div class="qty-box">
+                      <label class="field-label" for="qty-${item.id}">Qty</label>
+                      <input class="input-field item-qty-input" id="qty-${item.id}" type="number" min="0" max="20" value="0" data-menu-id="${item.id}">
+                    </div>
+                  </article>
+                `
+              )
+              .join('')}
+          </div>
+        </details>
       `
     )
     .join('');
