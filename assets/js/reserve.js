@@ -1,9 +1,25 @@
 const state = {
-  bootstrap: null
+  bootstrap: null,
+  menuItems: [],
+  selectedItems: new Map()
 };
+
+const currencyFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  maximumFractionDigits: 2
+});
 
 function select(selector) {
   return document.querySelector(selector);
+}
+
+function getReservationType() {
+  return document.querySelector('input[name="reservationType"]:checked')?.value || 'TABLE_ONLY';
+}
+
+function formatCurrency(value) {
+  return currencyFormatter.format(Number(value || 0));
 }
 
 function setStatus(element, message, type) {
@@ -32,6 +48,83 @@ async function request(url, options = {}) {
   return payload;
 }
 
+function getSelectedItems() {
+  return state.menuItems
+    .map((item) => ({
+      menuItemId: item.id,
+      quantity: Number(state.selectedItems.get(item.id) || 0)
+    }))
+    .filter((item) => item.quantity > 0);
+}
+
+function calculateSummary() {
+  const selectedItems = getSelectedItems();
+  const subtotal = selectedItems.reduce((total, selectedItem) => {
+    const menuItem = state.menuItems.find((item) => item.id === selectedItem.menuItemId);
+    return total + Number(menuItem?.price || 0) * selectedItem.quantity;
+  }, 0);
+
+  return {
+    subtotal,
+    selectedItems
+  };
+}
+
+function renderSummary() {
+  const summary = calculateSummary();
+  select('#selected-count').textContent = String(summary.selectedItems.length);
+  select('#subtotal-amount').textContent = formatCurrency(summary.subtotal);
+}
+
+function renderMenuItems() {
+  const menuContainer = select('#menu-list');
+
+  const byCategory = state.menuItems.reduce((groups, item) => {
+    if (!groups[item.category]) {
+      groups[item.category] = [];
+    }
+    groups[item.category].push(item);
+    return groups;
+  }, {});
+
+  menuContainer.innerHTML = Object.entries(byCategory)
+    .map(
+      ([category, items]) => `
+        <div class="menu-category-group">
+          <h4 class="menu-category-heading">${category}</h4>
+          ${items
+            .map(
+              (item) => `
+                <article class="menu-item-card">
+                  <div class="menu-item-copy">
+                    <h3>${item.name}</h3>
+                    <div class="menu-meta">
+                      <span class="menu-chip">${formatCurrency(item.price)}</span>
+                    </div>
+                  </div>
+                  <div class="qty-box">
+                    <label class="field-label" for="qty-${item.id}">Qty</label>
+                    <input class="input-field item-qty-input" id="qty-${item.id}" type="number" min="0" max="20" value="0" data-menu-id="${item.id}">
+                  </div>
+                </article>
+              `
+            )
+            .join('')}
+        </div>
+      `
+    )
+    .join('');
+
+  menuContainer.querySelectorAll('.item-qty-input').forEach((input) => {
+    input.addEventListener('input', () => {
+      const quantity = Math.max(0, Math.min(20, Number(input.value || 0)));
+      input.value = String(quantity);
+      state.selectedItems.set(input.dataset.menuId, quantity);
+      renderSummary();
+    });
+  });
+}
+
 function populateBranches() {
   const branchSelect = select('#branchId');
   const lookupBranchNotes = select('#branch-notes');
@@ -52,16 +145,28 @@ function populateBranches() {
     .join('');
 }
 
+function togglePreorderPanel() {
+  const preorderActive = getReservationType() === 'TABLE_WITH_PREORDER';
+  select('#menu-panel').classList.toggle('active', preorderActive);
+  renderSummary();
+}
+
 async function initializeBootstrap() {
-  const bootstrap = await request('/api/public/bootstrap');
+  const [bootstrap, menuPayload] = await Promise.all([
+    request('/api/public/bootstrap'),
+    request('/api/public/menu')
+  ]);
 
   state.bootstrap = bootstrap;
+  state.menuItems = menuPayload.items;
 
-  select('#hero-subcopy').textContent = 'Choose your branch, date, and guests to request a table.';
+  select('#hero-subcopy').textContent = 'Choose your branch, date, guests, and optionally pre-order your food.';
   select('#policy-copy').textContent =
     `Bookings support ${bootstrap.bookingPolicy.minimumGuests} to ${bootstrap.bookingPolicy.maximumGuests} guests. Default reservation duration is ${bootstrap.bookingPolicy.defaultReservationDurationMinutes} minutes.`;
 
   populateBranches();
+  renderMenuItems();
+  renderSummary();
 }
 
 function buildAvailabilityPayload() {
@@ -110,9 +215,9 @@ function buildReservationPayload() {
     endTime: select('#endTime').value,
     specialRequests: select('#specialRequests').value.trim(),
     occasion: select('#occasion').value,
-    reservationType: 'TABLE_ONLY',
+    reservationType: getReservationType(),
     policyAccepted: select('#policyAccepted').checked,
-    items: []
+    items: getSelectedItems()
   };
 }
 
@@ -125,7 +230,15 @@ function renderReservationDetails(target, reservation) {
       <div><span>Time</span><strong>${reservation.arrivalTime} - ${reservation.endTime}</strong></div>
       <div><span>Guests</span><strong>${reservation.guestCount}</strong></div>
       <div><span>Status</span><strong>${reservation.bookingStatus.replace(/_/g, ' ')}</strong></div>
+      <div><span>Reservation Type</span><strong>${reservation.reservationType.replace(/_/g, ' ')}</strong></div>
     </div>
+    ${
+      reservation.items.length
+        ? `<div class="qr-box"><strong>Pre-ordered Dishes</strong><p class="muted-copy">${reservation.items
+            .map((item) => `${item.itemName} x ${item.quantity}`)
+            .join(', ')}</p><p class="muted-copy">Pay for these at the restaurant.</p></div>`
+        : ''
+    }
   `;
 }
 
@@ -134,6 +247,11 @@ async function submitReservation(event) {
   const statusBox = select('#form-status');
   const submitButton = select('#submit-button');
   const payload = buildReservationPayload();
+
+  if (payload.reservationType === 'TABLE_WITH_PREORDER' && payload.items.length === 0) {
+    setStatus(statusBox, 'Choose at least one dish when using Reserve Table + Pre-order Food.', 'error');
+    return;
+  }
 
   setStatus(statusBox, 'Submitting your reservation...', '');
   submitButton.disabled = true;
@@ -197,6 +315,10 @@ async function initializePage() {
   try {
     applyDateDefaults();
     await initializeBootstrap();
+    document.querySelectorAll('input[name="reservationType"]').forEach((input) => {
+      input.addEventListener('change', togglePreorderPanel);
+    });
+    togglePreorderPanel();
 
     select('#availability-button').addEventListener('click', checkAvailability);
     select('#reservation-form').addEventListener('submit', submitReservation);

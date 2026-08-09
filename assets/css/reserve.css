@@ -307,15 +307,30 @@ body.reserve-page {
   margin-top: 18px;
 }
 
+.menu-category-group {
+  margin-bottom: 22px;
+}
+
+.menu-category-heading {
+  font-size: 1.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gold-crayola);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--white-alpha-10);
+}
+
 .menu-item-card {
   display: grid;
-  grid-template-columns: 92px 1fr auto;
+  grid-template-columns: 1fr auto;
   gap: 16px;
   align-items: center;
-  padding: 16px;
+  padding: 14px 16px;
   border: 1px solid var(--white-alpha-10);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 10px;
 }
 
 .menu-item-card img {

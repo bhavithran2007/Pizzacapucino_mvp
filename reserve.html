@@ -117,11 +117,33 @@
                   <textarea id="specialRequests" name="specialRequests" class="input-field" placeholder="Birthday setup, corner table, child seat, dietary note..."></textarea>
                 </div>
 
-                <input type="hidden" name="reservationType" value="TABLE_ONLY">
+                <div class="choice-grid">
+                  <label class="choice-card inline-radio">
+                    <input type="radio" name="reservationType" value="TABLE_ONLY" checked>
+                    <span>
+                      <strong>Reserve Table Only</strong>
+                      <p>No pre-order. Booking stays pending until the restaurant reviews it.</p>
+                    </span>
+                  </label>
+
+                  <label class="choice-card inline-radio">
+                    <input type="radio" name="reservationType" value="TABLE_WITH_PREORDER">
+                    <span>
+                      <strong>Reserve Table + Pre-order Food</strong>
+                      <p>Pick your dishes now so they're ready when you arrive. No payment needed online.</p>
+                    </span>
+                  </label>
+                </div>
+
+                <section id="menu-panel" class="menu-panel">
+                  <p class="section-subtitle label-2">Pre-order Menu</p>
+                  <h3 class="headline-2">Add dishes before arrival</h3>
+                  <div id="menu-list" class="menu-list"></div>
+                </section>
 
                 <label class="checkbox-row">
                   <input id="policyAccepted" name="policyAccepted" type="checkbox" required>
-                  <span>I agree to the reservation policy.</span>
+                  <span>I agree to the reservation policy. Pre-ordered food is paid for at the restaurant, not online.</span>
                 </label>
 
                 <div class="action-row">
@@ -145,7 +167,15 @@
               <div class="summary-stack">
                 <div class="summary-card">
                   <p class="section-subtitle label-2">Booking Summary</p>
-                  <p class="body-4">No payment needed to reserve — just fill in your details and we'll confirm your table.</p>
+                  <div class="summary-metric">
+                    <span>Selected dishes</span>
+                    <strong id="selected-count">0</strong>
+                  </div>
+                  <div class="summary-metric">
+                    <span>Estimated total</span>
+                    <strong id="subtotal-amount">Rs. 0</strong>
+                  </div>
+                  <p class="body-4">No payment needed online — pay at the restaurant when you arrive.</p>
                 </div>
 
                 <div class="summary-card">
@@ -192,4 +222,3 @@
   <script src="./assets/js/reserve.js"></script>
 </body>
 </html>
-

@@ -482,9 +482,9 @@ async function createReservation(payload) {
     });
 
     const subtotal = reservationItems.reduce((total, item) => total + item.subtotal, 0);
-    const advancePercentage = shouldPreorder ? availability.bookingPolicy.advancePaymentPercentage : 0;
-    const advanceDue = shouldPreorder ? Number(((subtotal * advancePercentage) / 100).toFixed(2)) : 0;
-    const balanceDue = shouldPreorder ? Number((subtotal - advanceDue).toFixed(2)) : 0;
+    const advancePercentage = 0;
+    const advanceDue = 0;
+    const balanceDue = subtotal;
 
     const existingCustomer = await tx.customer.findFirst({
       where: {
@@ -511,11 +511,9 @@ async function createReservation(payload) {
         });
 
     const bookingCode = await generateNextBookingCode(tx);
-    const paymentStatus = shouldPreorder ? PaymentStatus.AWAITING_CONFIRMATION : PaymentStatus.NOT_REQUIRED;
-    const paymentMethod = shouldPreorder ? PaymentMethod.MANUAL_UPI_QR : PaymentMethod.NONE;
-    const manualPaymentNote = shouldPreorder
-      ? `Share the payment screenshot to ${manualPaymentConfig.whatsappNumber}. Screenshot file is not stored on the server.`
-      : null;
+    const paymentStatus = PaymentStatus.NOT_REQUIRED;
+    const paymentMethod = PaymentMethod.NONE;
+    const manualPaymentNote = shouldPreorder ? 'Pay for pre-ordered items at the restaurant.' : null;
 
     const reservation = await tx.reservation.create({
       data: {
@@ -544,7 +542,7 @@ async function createReservation(payload) {
               create: reservationItems
             }
           : undefined,
-        payments: shouldPreorder
+        payments: false
           ? {
               create: [
                 {
