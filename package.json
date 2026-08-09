@@ -1,0 +1,44 @@
+{
+  "name": "pizzacapucino-mvp",
+  "version": "1.0.0",
+  "description": "Restaurant reservation MVP foundation for Pizza Capucino",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:format": "prisma format",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:seed": "node prisma/seed.js"
+  },
+  "keywords": [
+    "restaurant",
+    "reservation",
+    "express",
+    "mysql",
+    "prisma"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^6.10.1",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.5.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "morgan": "^1.10.0",
+    "nodemailer": "^9.0.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "prisma": "^6.10.1"
+  }
+}

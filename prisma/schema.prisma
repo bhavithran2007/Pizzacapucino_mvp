@@ -1,0 +1,283 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  BRANCH_ADMIN
+  STAFF
+}
+
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum ReservationType {
+  TABLE_ONLY
+  TABLE_WITH_PREORDER
+}
+
+enum PaymentStatus {
+  NOT_REQUIRED
+  PENDING
+  AWAITING_CONFIRMATION
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  NONE
+  CASH
+  CARD
+  MANUAL_UPI_QR
+  RAZORPAY
+}
+
+enum PaymentProvider {
+  NONE
+  MANUAL_UPI_QR
+  RAZORPAY
+}
+
+enum Occasion {
+  NONE
+  BIRTHDAY
+  ANNIVERSARY
+  BUSINESS_MEETING
+  FAMILY_DINNER
+  OTHER
+}
+
+enum DietaryType {
+  VEG
+  NON_VEG
+  EGG
+  BEVERAGE
+  DESSERT
+}
+
+enum NotificationType {
+  NEW_BOOKING
+  PAYMENT_UPDATE
+  BOOKING_STATUS
+  SYSTEM
+}
+
+enum NotificationChannel {
+  DASHBOARD
+  EMAIL
+  SMS
+  WHATSAPP
+}
+
+model Admin {
+  id               String         @id @default(cuid())
+  username         String         @unique @db.VarChar(60)
+  email            String?        @unique @db.VarChar(120)
+  fullName         String         @db.VarChar(120)
+  passwordHash     String         @db.VarChar(255)
+  role             AdminRole      @default(SUPER_ADMIN)
+  isActive         Boolean        @default(true)
+  lastLoginAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  verifiedPayments Payment[]      @relation("PaymentVerifier")
+  notifications    Notification[]
+}
+
+model Branch {
+  id              String           @id @default(cuid())
+  code            String           @unique @db.VarChar(20)
+  name            String           @db.VarChar(120)
+  slug            String           @unique @db.VarChar(120)
+  phone           String?          @db.VarChar(25)
+  addressLine1    String           @db.VarChar(255)
+  addressLine2    String?          @db.VarChar(255)
+  city            String?          @db.VarChar(120)
+  state           String?          @db.VarChar(120)
+  postalCode      String?          @db.VarChar(20)
+  mapsUrl         String?          @db.VarChar(500)
+  totalTables     Int              @default(0)
+  totalSeats      Int              @default(0)
+  opensAt         String?          @db.VarChar(5)
+  closesAt        String?          @db.VarChar(5)
+  isActive        Boolean          @default(true)
+  reservations    Reservation[]
+  analyticsEvents AnalyticsEvent[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([isActive])
+}
+
+model Customer {
+  id              String        @id @default(cuid())
+  fullName        String        @db.VarChar(120)
+  mobileNumber    String        @db.VarChar(20)
+  altMobileNumber String?       @db.VarChar(20)
+  email           String?       @db.VarChar(120)
+  reservations    Reservation[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([mobileNumber])
+  @@index([email])
+}
+
+model Reservation {
+  id                String            @id @default(cuid())
+  bookingCode       String            @unique @db.VarChar(20)
+  customerId        String
+  branchId          String
+  serviceDate       DateTime          @db.Date
+  startAt           DateTime
+  endAt             DateTime
+  guestCount        Int
+  reservationType   ReservationType
+  status            ReservationStatus @default(PENDING)
+  paymentStatus     PaymentStatus     @default(NOT_REQUIRED)
+  paymentMethod     PaymentMethod     @default(NONE)
+  occasion          Occasion          @default(NONE)
+  specialRequests   String?           @db.Text
+  policyAccepted    Boolean           @default(false)
+  subtotal          Decimal           @default(0) @db.Decimal(10, 2)
+  advanceDue        Decimal           @default(0) @db.Decimal(10, 2)
+  advancePaid       Decimal           @default(0) @db.Decimal(10, 2)
+  balanceDue        Decimal           @default(0) @db.Decimal(10, 2)
+  manualPaymentNote String?           @db.VarChar(255)
+  source            String?           @db.VarChar(50)
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  cancelledAt       DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  customer          Customer          @relation(fields: [customerId], references: [id])
+  branch            Branch            @relation(fields: [branchId], references: [id])
+  items             ReservationItem[]
+  payments          Payment[]
+  notifications     Notification[]
+  analyticsEvents   AnalyticsEvent[]
+
+  @@index([branchId, serviceDate])
+  @@index([branchId, startAt, endAt])
+  @@index([status])
+  @@index([paymentStatus])
+}
+
+model ReservationItem {
+  id                String      @id @default(cuid())
+  reservationId     String
+  menuItemId        String?
+  itemNameSnapshot  String      @db.VarChar(120)
+  itemPriceSnapshot Decimal     @default(0) @db.Decimal(10, 2)
+  quantity          Int         @default(1)
+  subtotal          Decimal     @default(0) @db.Decimal(10, 2)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  reservation       Reservation @relation(fields: [reservationId], references: [id])
+  menuItem          MenuItem?   @relation(fields: [menuItemId], references: [id])
+
+  @@index([reservationId])
+}
+
+model MenuItem {
+  id               String            @id @default(cuid())
+  code             String?           @unique @db.VarChar(30)
+  name             String            @db.VarChar(120)
+  slug             String            @unique @db.VarChar(150)
+  description      String?           @db.Text
+  category         String            @db.VarChar(80)
+  price            Decimal           @default(0) @db.Decimal(10, 2)
+  imageUrl         String?           @db.VarChar(500)
+  dietaryType      DietaryType       @default(VEG)
+  isFeatured       Boolean           @default(false)
+  isAvailable      Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  reservationItems ReservationItem[]
+
+  @@index([category])
+  @@index([isAvailable])
+}
+
+model Payment {
+  id                String          @id @default(cuid())
+  reservationId     String
+  provider          PaymentProvider @default(NONE)
+  method            PaymentMethod   @default(NONE)
+  status            PaymentStatus   @default(PENDING)
+  amount            Decimal         @default(0) @db.Decimal(10, 2)
+  advancePercentage Int             @default(50)
+  currency          String          @default("INR") @db.VarChar(8)
+  transactionRef    String?         @db.VarChar(120)
+  instructions      String?         @db.Text
+  proofRequested    Boolean         @default(true)
+  proofStored       Boolean         @default(false)
+  paidAt            DateTime?
+  verifiedAt        DateTime?
+  verifiedByAdminId String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  reservation       Reservation     @relation(fields: [reservationId], references: [id])
+  verifiedByAdmin   Admin?          @relation("PaymentVerifier", fields: [verifiedByAdminId], references: [id])
+
+  @@index([reservationId])
+  @@index([status])
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  group     String   @db.VarChar(80)
+  key       String   @unique @db.VarChar(120)
+  value     Json
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([group])
+  @@index([isPublic])
+}
+
+model Notification {
+  id            String              @id @default(cuid())
+  adminId       String?
+  reservationId String?
+  type          NotificationType
+  channel       NotificationChannel @default(DASHBOARD)
+  title         String              @db.VarChar(150)
+  message       String              @db.Text
+  metadata      Json?
+  isRead        Boolean             @default(false)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  admin         Admin?              @relation(fields: [adminId], references: [id])
+  reservation   Reservation?        @relation(fields: [reservationId], references: [id])
+
+  @@index([adminId, isRead])
+  @@index([reservationId])
+}
+
+model AnalyticsEvent {
+  id            String       @id @default(cuid())
+  eventType     String       @db.VarChar(120)
+  branchId      String?
+  reservationId String?
+  payload       Json?
+  occurredAt    DateTime     @default(now())
+  branch        Branch?      @relation(fields: [branchId], references: [id])
+  reservation   Reservation? @relation(fields: [reservationId], references: [id])
+
+  @@index([eventType])
+  @@index([occurredAt])
+}

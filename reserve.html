@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reserve a Table | Pizza Capucino</title>
+  <meta name="description" content="Reserve a table at Pizza Capucino, pick your branch, and optionally pre-order your dishes.">
+  <link rel="shortcut icon" href="./assets/images/logo1.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Forum&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <link rel="stylesheet" href="./assets/css/reserve.css">
+</head>
+<body class="loaded reserve-page">
+  <header class="reserve-header">
+    <div class="container">
+      <a href="index.html" class="reserve-logo">
+        <img src="./assets/images/logo1.png" alt="Pizza Capucino">
+      </a>
+
+      <nav class="reserve-nav" aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Menu</a>
+        <a href="aboutus.html">About</a>
+        <a href="reserve.html">Reserve</a>
+        <a href="tel:+918680986888">Call</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="reserve-hero">
+      <div class="container">
+        <div class="reserve-hero-copy">
+          <p class="section-subtitle label-2">Online Booking</p>
+          <h1 class="headline-1">Reserve your table with the real branch, guest, and preorder flow.</h1>
+          <p id="hero-subcopy" class="body-2">Loading booking details...</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="reserve-main">
+      <div class="container reserve-panels">
+        <div class="reserve-layout">
+          <article class="reserve-card reserve-form-card">
+            <div class="reserve-card-block">
+              <div class="reserve-intro">
+                <p class="section-subtitle label-2">Reservation Form</p>
+                <h2 class="headline-2">Tell us when you’re coming</h2>
+                <p id="policy-copy" class="body-4">Loading reservation policy...</p>
+              </div>
+
+              <form id="reservation-form" class="reserve-grid">
+                <div class="reserve-grid two">
+                  <div>
+                    <label class="field-label" for="fullName">Full Name</label>
+                    <input id="fullName" name="fullName" class="input-field" type="text" required>
+                  </div>
+                  <div>
+                    <label class="field-label" for="email">Email Address</label>
+                    <input id="email" name="email" class="input-field" type="email" required>
+                  </div>
+                </div>
+
+                <div class="reserve-grid two">
+                  <div>
+                    <label class="field-label" for="mobileNumber">Mobile Number</label>
+                    <input id="mobileNumber" name="mobileNumber" class="input-field" type="tel" required>
+                  </div>
+                  <div>
+                    <label class="field-label" for="altMobileNumber">Alternative Mobile Number</label>
+                    <input id="altMobileNumber" name="altMobileNumber" class="input-field" type="tel">
+                  </div>
+                </div>
+
+                <div class="reserve-grid three">
+                  <div>
+                    <label class="field-label" for="branchId">Branch</label>
+                    <select id="branchId" name="branchId" class="select-field" required></select>
+                  </div>
+                  <div>
+                    <label class="field-label" for="guestCount">Number of Guests</label>
+                    <input id="guestCount" name="guestCount" class="input-field" type="number" min="1" max="20" value="2" required>
+                  </div>
+                  <div>
+                    <label class="field-label" for="occasion">Occasion</label>
+                    <select id="occasion" name="occasion" class="select-field">
+                      <option value="NONE">Select occasion</option>
+                      <option value="BIRTHDAY">Birthday</option>
+                      <option value="ANNIVERSARY">Anniversary</option>
+                      <option value="BUSINESS_MEETING">Business Meeting</option>
+                      <option value="FAMILY_DINNER">Family Dinner</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="reserve-grid three">
+                  <div>
+                    <label class="field-label" for="date">Date</label>
+                    <input id="date" name="date" class="input-field" type="date" required>
+                  </div>
+                  <div>
+                    <label class="field-label" for="arrivalTime">Arrival Time</label>
+                    <input id="arrivalTime" name="arrivalTime" class="input-field" type="time" required>
+                  </div>
+                  <div>
+                    <label class="field-label" for="endTime">Table Required Until</label>
+                    <input id="endTime" name="endTime" class="input-field" type="time" required>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="field-label" for="specialRequests">Special Requests / Notes</label>
+                  <textarea id="specialRequests" name="specialRequests" class="input-field" placeholder="Birthday setup, corner table, child seat, dietary note..."></textarea>
+                </div>
+
+                <input type="hidden" name="reservationType" value="TABLE_ONLY">
+
+                <label class="checkbox-row">
+                  <input id="policyAccepted" name="policyAccepted" type="checkbox" required>
+                  <span>I agree to the reservation policy.</span>
+                </label>
+
+                <div class="action-row">
+                  <button id="availability-button" class="btn btn-outline" type="button">
+                    <span class="text text-1">Check Availability</span>
+                    <span class="text text-2" aria-hidden="true">Check Availability</span>
+                  </button>
+
+                  <button id="submit-button" class="btn btn-secondary" type="submit">
+                    <span class="text text-1">Submit Reservation</span>
+                    <span class="text text-2" aria-hidden="true">Submit Reservation</span>
+                  </button>
+                </div>
+
+                <div id="availability-result" class="availability-card">Availability updates will appear here.</div>
+                <div id="form-status" class="status-box"></div>
+              </form>
+            </div>
+
+            <aside class="reserve-card-block">
+              <div class="summary-stack">
+                <div class="summary-card">
+                  <p class="section-subtitle label-2">Booking Summary</p>
+                  <p class="body-4">No payment needed to reserve — just fill in your details and we'll confirm your table.</p>
+                </div>
+
+                <div class="summary-card">
+                  <p class="section-subtitle label-2">Active Branches</p>
+                  <div id="branch-notes" class="detail-grid"></div>
+                </div>
+              </div>
+            </aside>
+          </article>
+
+          <section id="confirmation-card" class="reserve-card confirmation-card hide"></section>
+
+          <section class="reserve-card lookup-card">
+            <div class="reserve-card-block">
+              <p class="section-subtitle label-2">Booking Status</p>
+              <h2 class="headline-2">Check an existing reservation</h2>
+              <p class="body-4 muted-copy">Enter your booking code and the phone number used during reservation.</p>
+
+              <div class="lookup-layout">
+                <form id="lookup-form" class="reserve-grid">
+                  <div>
+                    <label class="field-label" for="lookupBookingCode">Booking ID</label>
+                    <input id="lookupBookingCode" class="input-field" type="text" placeholder="BK-000001" required>
+                  </div>
+                  <div>
+                    <label class="field-label" for="lookupPhone">Phone Number</label>
+                    <input id="lookupPhone" class="input-field" type="tel" required>
+                  </div>
+                  <button class="btn btn-secondary" type="submit">
+                    <span class="text text-1">Check Status</span>
+                    <span class="text text-2" aria-hidden="true">Check Status</span>
+                  </button>
+                </form>
+
+                <div id="lookup-result" class="lookup-result">Your reservation details will appear here after lookup.</div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./assets/js/reserve.js"></script>
+</body>
+</html>
